@@ -195,15 +195,15 @@ public class Instances {
 		return alltextUpdated;
 	}
 	
-	public String[] selectInstanceHighest(Map<String, Double> test_instances){
+	public String[] selectInstanceHighest(Map<String, Double> test_instances, double confidence){
 		double maxProbability = Collections.max(test_instances.values());
 		String[] type = new String[2];
 		for(Entry<String, Double> entry : test_instances.entrySet()){
-			if(entry.getValue() == maxProbability && maxProbability >= 0.6){
+			if(entry.getValue() == maxProbability && maxProbability >= confidence){
 				type[0] = entry.getKey();
 				type[1] = "add";
 			}
-			if(entry.getValue() == maxProbability && maxProbability < 0.6){
+			if(entry.getValue() == maxProbability && maxProbability < confidence){
 				type[0] = entry.getKey();
 				type[1] = "keep";
 			}

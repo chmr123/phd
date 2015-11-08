@@ -20,12 +20,14 @@ public class AutoODCTF {
 			System.exit(0);
 		}
 		// TODO Auto-generated method stub
-		MaxentTagger tagger = new MaxentTagger("taggers/english-left3words-distsim.tagger");
+		//MaxentTagger tagger = new MaxentTagger("taggers/english-left3words-distsim.tagger");
 		Documents doc = new Documents();
 		Instances ins = new Instances();
-		String[] files = {"filezilla.csv","prismstream.csv"};
+		String[] files = {"filezilla_keywords.csv","prismstream_keywords.csv"};
 		Map<String,String[]> alltext = doc.getTextFromFile(files);
-		ArrayList<String> dictionary = ins.dictionary(alltext);
+		
+		//ArrayList<String> dictionary = ins.dictionary(alltext);
+		ArrayList<String> dictionary = ins.dictionaryInCommon(alltext);
 		//ArrayList<String> dictionary = ins.dictionaryWithPosTag(alltext,tagger);
 		ins.generateTrainingFile(dictionary, alltext, files[0], category);
 		ins.generateTestingFile(dictionary, alltext, files[1], category);

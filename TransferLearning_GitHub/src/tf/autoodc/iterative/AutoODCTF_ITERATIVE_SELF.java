@@ -15,6 +15,7 @@ public class AutoODCTF_ITERATIVE_SELF {
 		String category = "";
 		String training = "";
 		String testing = "";
+		double confidence = 0.5;
 		for(int i = 0; i < args.length; i++){
 			if(args[i].equals("-c")){
 				category = args[i+1];
@@ -25,12 +26,15 @@ public class AutoODCTF_ITERATIVE_SELF {
 			if(args[i].equals("-test")){
 				testing = args[i+1];
 			}
+			if(args[i].equals("-p")){
+				confidence = Double.parseDouble(args[i+1]);
+			}
 		}
 		
-		System.out.println("Removing temp files...");
+		System.out.println("Removing old files...");
 		File folder = new File(".");
 		for (File f : folder.listFiles()) {
-		    if (f.getName().endsWith(".data")) {
+		    if (f.getName().endsWith(".data") || f.getName().endsWith(".probability")) {
 		        f.delete(); // may fail mysteriously - returns boolean you may want to check
 		    }
 		}
@@ -61,6 +65,7 @@ public class AutoODCTF_ITERATIVE_SELF {
 			
 			//define a counter for iteration number
 			int iterationNum = 1;
+			
 			while(ins.getTestDataSize(alltext) != 0){
 				System.out.println("Iteration " + iterationNum + "...(" + initialTestDataSize + " iterations left)");
 				svm_iteration(c);//Iterative learning
@@ -70,7 +75,7 @@ public class AutoODCTF_ITERATIVE_SELF {
 				//Create a map to store the labels the SVM classifier predicted on the test data in each iteration
 				Map<String, Integer> predictedLabelsMap = ins.getPredictedLabels(alltext,c);
 				//The selected instance with highest probability
-				String[] selectedKey_type = ins.selectInstanceHighest(predictedProbabilityMap);
+				String[] selectedKey_type = ins.selectInstanceHighest(predictedProbabilityMap, confidence);
 				int selectedLabel = 0;
 				if(selectedKey_type[1].equals("keep")) {
 					System.out.println("Skip adding");
@@ -78,16 +83,16 @@ public class AutoODCTF_ITERATIVE_SELF {
 					alltext = ins.updateAllTextNoSelection(alltext, selectedKey_type[0], selectedLabel,dictionary, c);
 				}
 				
-				if(selectedKey_type[1].equals("add")) {
+				/*if(selectedKey_type[1].equals("add")) {
 					selectedLabel = predictedLabelsMap.get(selectedKey_type[0]);	
 					System.out.println("adding instance " + selectedLabel);
 					alltext = ins.updateAllText(alltext, selectedKey_type[0], selectedLabel,dictionary, c);
 					if(selectedLabel == 1) positive++;
 					if(selectedLabel == -1) negative++;
 						//alltext = ins.updateAllTextNoSelection(alltext, selectedKey_type[0], selectedLabel,dictionary, c);			
-				}
+				}*/
 				
-				/*if(selectedKey_type[1].equals("add")) {
+				if(selectedKey_type[1].equals("add")) {
 					selectedLabel = predictedLabelsMap.get(selectedKey_type[0]);	
 					if(selectedLabel == 1){
 						System.out.println("adding instance " + selectedLabel);
@@ -100,7 +105,7 @@ public class AutoODCTF_ITERATIVE_SELF {
 					if(selectedLabel == 1) positive++;
 					if(selectedLabel == -1) negative++;
 							
-				}*/
+				}
 				
 				//The predicted label of the selected instance above
 				//int selectedLabel = predictedLabelsMap.get(selectedKey);

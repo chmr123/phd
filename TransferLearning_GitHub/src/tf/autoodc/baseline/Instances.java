@@ -30,6 +30,23 @@ public class Instances {
 		return dictionary;
 	}
 	
+	public ArrayList<String> dictionaryInCommon(Map<String, String[]> alltext){
+		Set<String> trainingSet = new HashSet<String>();
+		Set<String> testingSet = new HashSet<String>();
+		for(String line : alltext.keySet()){
+			String[] split = line.split("\\s+");
+			if(alltext.get(line)[1].equals("filezilla.csv")){
+				for(String s : split) trainingSet.add(s);
+			}
+			if(alltext.get(line)[1].equals("prismstream.csv")){
+				for(String s : split) testingSet.add(s);
+			}
+		}
+		trainingSet.retainAll(testingSet);
+		ArrayList<String> dictionary = new ArrayList<String>(trainingSet);
+		return dictionary;
+	}
+	
 	public ArrayList<String> dictionaryWithPosTag(Map<String, String[]> alltext,MaxentTagger tagger) {
 		Set<String> tokenset = new HashSet<String>();
 		for (String line : alltext.keySet()) {
