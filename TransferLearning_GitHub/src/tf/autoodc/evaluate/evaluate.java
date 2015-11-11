@@ -9,10 +9,18 @@ import java.util.ArrayList;
 public class evaluate {
 
 	public static void main(String[] args) throws IOException {
-		File testfile = new File(args[0]);
-		File output = new File("output");
+		String category = "";
+
+		for (int i = 0; i < args.length; i++) {
+			if (args[i].equals("-c")) {
+				category = args[i + 1];
+			}
+
+		}
+	
+		File output = new File(category+ ".output");
 		BufferedReader br1 = new BufferedReader(new FileReader(output));
-		BufferedReader br2 = new BufferedReader(new FileReader(testfile));
+		BufferedReader br2 = new BufferedReader(new FileReader(category + ".test"));
 		
 		String line;
 		ArrayList<Integer> predictedLabels = new ArrayList<Integer>();
@@ -48,7 +56,7 @@ public class evaluate {
 		double precision = tp / (tp + fp);
 		double f1 = 2*recall*precision/(recall + precision);
 		
-		System.out.printf("Recall: %.3f, Precision %.3f, F-score %.3f\n", recall, precision, f1);
+		System.out.printf(category + ": " + "Recall: %.3f, Precision %.3f, F-score %.3f\n", recall, precision, f1);
 
 	}
 
