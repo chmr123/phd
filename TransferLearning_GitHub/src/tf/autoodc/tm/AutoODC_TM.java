@@ -77,6 +77,7 @@ public class AutoODC_TM {
 		ProcessBuilder pr1 = new ProcessBuilder("./svm-train", "-q", "-c", "10000", "-b", "1", category+".train", "model");
 		pr1.directory(new File("."));
 		Process p = pr1.start();
+		System.out.println("Training");
 		p.waitFor();
 
 		// Test a prediction model
@@ -84,6 +85,7 @@ public class AutoODC_TM {
 				category + ".output");
 		pr2.directory(new File("."));
 		p = pr2.start();
+		System.out.println("Testing");
 		p.waitFor();
 
 	}
