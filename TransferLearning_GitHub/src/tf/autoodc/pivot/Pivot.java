@@ -33,7 +33,8 @@ public class Pivot {
 	Map<String, Set<String>> alltextKeyWords;
 	Map<String, String[]> alltextOriginal;
 
-	public Pivot(Map<String, Set<String>> alltextKeyWords, Map<String, String[]> alltextOriginal) {
+	public Pivot(Map<String, Set<String>> alltextKeyWords,
+			Map<String, String[]> alltextOriginal) {
 		this.alltextKeyWords = alltextKeyWords;
 		this.alltextOriginal = alltextOriginal;
 	}
@@ -49,31 +50,33 @@ public class Pivot {
 
 	public Map<String, ArrayList<String>> extendFeatureSpace() {
 		Map<String, ArrayList<String>> keywords_extension = new LinkedHashMap<String, ArrayList<String>>();
-			for (String line : alltextKeyWords.keySet()) {
-				ArrayList<String> alltuples = new ArrayList<String>();
-				Set<String> keywords = alltextKeyWords.get(line);
-				for(String keyword : keywords){
-					ArrayList<String> tuples = new ArrayList<String>();
-					tuples = getKeyWordsDependency(line, keyword);
-					alltuples.addAll(tuples);
-				}
-				keywords_extension.put(line, alltuples);
+		for (String line : alltextKeyWords.keySet()) {
+			ArrayList<String> alltuples = new ArrayList<String>();
+			Set<String> keywords = alltextKeyWords.get(line);
+			for (String keyword : keywords) {
+				ArrayList<String> tuples = new ArrayList<String>();
+				tuples = getKeyWordsDependency(line, keyword);
+				alltuples.addAll(tuples);
 			}
+			keywords_extension.put(line, alltuples);
+		}
 		return keywords_extension;
 	}
 
-	public Map<String, String[]> getSentenceWithPosTags(){
+	public Map<String, String[]> getSentenceWithPosTags() {
 		Map<String, String[]> taggedSentenceMap = new LinkedHashMap<String, String[]>();
-		for(String sentence : alltextOriginal.keySet()){
+		for (String sentence : alltextOriginal.keySet()) {
 			String tagged = postag(sentence);
 			String[] entry = alltextOriginal.get(sentence);
 			taggedSentenceMap.put(tagged, entry);
 		}
 		return taggedSentenceMap;
 	}
+
 	public ArrayList<String> getKeyWordsDependency(String sentence, String keyword) {
-		LexicalizedParser lp = LexicalizedParser.loadModel("/home/mingrui/Desktop/englishPCFG.ser.gz", "-maxLength",
-				"80", "-retainTmpSubcategories");
+		LexicalizedParser lp = LexicalizedParser.loadModel(
+				"/home/mingrui/Desktop/englishPCFG.ser.gz", "-maxLength", "80",
+				"-retainTmpSubcategories");
 		TreebankLanguagePack tlp = new PennTreebankLanguagePack();
 		// Uncomment the following line to obtain original Stanford Dependencies
 		// tlp.setGenerateOriginalDependencies(true);
@@ -83,7 +86,7 @@ public class Pivot {
 		GrammaticalStructure gs = gsf.newGrammaticalStructure(parse);
 		Collection<TypedDependency> tdl = gs.typedDependenciesCCprocessed();
 		ArrayList<String> keywordsDependency = new ArrayList<String>();
-
+		//String lemmatizedKeyword = lemmatize(keyword);
 		for (TypedDependency t : tdl) {
 			String d = t.toString();
 			String dependencyType = d.substring(0, d.indexOf("("));
@@ -91,29 +94,44 @@ public class Pivot {
 			String[] terms = pair.split(",");
 			String term1 = terms[0].trim();
 			String term2 = terms[1].trim();
-			if (term1.equals(keyword)) {
-				keywordsDependency.add(t.toString());
-			}
-			if (term2.equals(keyword)) {
-				keywordsDependency.add(t.toString());
+
+			// Match keywords with the terms in the tuples, if matched, add the
+			// tuple into the arraylist
+			String[] wordsplitted = keyword.split(" ");
+			for (String key : wordsplitted) {
+				if (term1.equals(key)) {
+					keywordsDependency.add(t.toString());
+				}
+				if (term2.equals(key)) {
+					keywordsDependency.add(t.toString());
+				}
 			}
 		}
+
 		return keywordsDependency;
 	}
-	
-	private String postag(String sentence){
-		MaxentTagger tagger = new MaxentTagger("taggers/left3words-distsim-wsj-0-18.tagger");
-        // The tagged string
-        String tagged = tagger.tagString(sentence);
-        // Output the result
-        return tagged;
+
+	/*
+	 * This function returns the tagged sentence
+	 */
+	private String postag(String sentence) {
+		MaxentTagger tagger = new MaxentTagger(
+				"taggers/left3words-distsim-wsj-0-18.tagger");
+		// The tagged string
+		String tagged = tagger.tagString(sentence);
+		// Output the result
+		return tagged;
 	}
-	
+
+	/*
+	 * This function return the lemmatized word from the original term
+	 */
 	private String lemmatize(String text) {
 		// creates a StanfordCoreNLP object, with POS tagging, lemmatization,
 		// NER, parsing, and coreference resolution
 		Properties props = new Properties();
-		props.setProperty("annotators", "tokenize, ssplit, pos, lemma, ner, parse, dcoref");
+		props.setProperty("annotators",
+				"tokenize, ssplit, pos, lemma, ner, parse, dcoref");
 		// props.setProperty("annotators", "lemma");
 		StanfordCoreNLP pipeline = new StanfordCoreNLP(props);
 
@@ -132,7 +150,7 @@ public class Pivot {
 			// traversing the words in the current sentence
 			// a CoreLabel is a CoreMap with additional token-specific methods
 			for (CoreLabel token : sentence.get(TokensAnnotation.class)) {
-				lemma = token.get(LemmaAnnotation.class);	
+				lemma = token.get(LemmaAnnotation.class);
 			}
 		}
 		return lemma;
