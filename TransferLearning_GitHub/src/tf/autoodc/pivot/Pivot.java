@@ -32,11 +32,14 @@ public class Pivot {
 	Set<String> pivots = new HashSet<String>();
 	Map<String, Set<String>> alltextKeyWords;
 	Map<String, String[]> alltextOriginal;
+	Properties props = new Properties();
+	StanfordCoreNLP pipeline = new StanfordCoreNLP(props);
 
 	public Pivot(Map<String, Set<String>> alltextKeyWords,
 			Map<String, String[]> alltextOriginal) {
 		this.alltextKeyWords = alltextKeyWords;
 		this.alltextOriginal = alltextOriginal;
+		props.setProperty("annotators", "tokenize, ssplit, pos, lemma, ner, parse, dcoref");
 	}
 
 	public void getPivotFeature(Map<String[], String> keywords_map) {
@@ -86,6 +89,7 @@ public class Pivot {
 		GrammaticalStructure gs = gsf.newGrammaticalStructure(parse);
 		Collection<TypedDependency> tdl = gs.typedDependenciesCCprocessed();
 		ArrayList<String> keywordsDependency = new ArrayList<String>();
+		ArrayList<String> keywordsDependencyWithLemmatization = new ArrayList<String>();
 		//String lemmatizedKeyword = lemmatize(keyword);
 		for (TypedDependency t : tdl) {
 			String d = t.toString();
@@ -107,8 +111,33 @@ public class Pivot {
 				}
 			}
 		}
-
-		return keywordsDependency;
+		
+		String lemmatizedKeywords = lemmatize(keyword);
+		int lbefore = keyword.split(" ").length;
+		int lafter = lemmatizedKeywords.split(" ").length;
+		if(lbefore == lafter){
+			return keywordsDependency;
+		}
+		else{
+			String[] split = keyword.split(" ");
+			for(String s : split){
+				String[] lemmas = lemmatize(s).split(" ");
+				boolean sameLength = lemmas.length == s.split(" ").length;
+				if(sameLength){ // Compare the length of one key_word or key_phrase before and after lemmatization
+					continue;
+				}
+				else{
+					for(String tuple : keywordsDependency){
+						if(getTupleTerms(tuple)[0].equals(s)){ //Find the tuple that contains the original keyword/key_phrase
+							String dependent = getTupleTerms(tuple)[1];
+							//String[]
+						}
+					}
+					//for(String l : lemma)
+				}
+			}
+			return keywordsDependencyWithLemmatization;
+		}
 	}
 
 	/*
@@ -127,14 +156,6 @@ public class Pivot {
 	 * This function return the lemmatized word from the original term
 	 */
 	private String lemmatize(String text) {
-		// creates a StanfordCoreNLP object, with POS tagging, lemmatization,
-		// NER, parsing, and coreference resolution
-		Properties props = new Properties();
-		props.setProperty("annotators",
-				"tokenize, ssplit, pos, lemma, ner, parse, dcoref");
-		// props.setProperty("annotators", "lemma");
-		StanfordCoreNLP pipeline = new StanfordCoreNLP(props);
-
 		// create an empty Annotation just with the given text
 		Annotation document = new Annotation(text);
 
@@ -154,5 +175,15 @@ public class Pivot {
 			}
 		}
 		return lemma;
+	}
+	
+	private String[] getTupleTerms(String tuple){
+		String pair = tuple.substring(tuple.indexOf("(") + 1, tuple.indexOf("("));
+		String[] terms = pair.split(",");
+		String term1 = terms[0].trim();
+		String term2 = terms[1].trim();
+		terms[0] = term1;
+		terms[1] = term2;
+		return terms;
 	}
 }
